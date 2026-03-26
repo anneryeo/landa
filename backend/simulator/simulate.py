@@ -4,15 +4,18 @@ import time
 import random
 import math
 import threading
+from pathlib import Path
 
 # --- FIREBASE INIT ---
-cred = credentials.Certificate("simulator/serviceAccountKey.json")
+BASE_DIR = Path(__file__).resolve().parent
+cred = credentials.Certificate(str(BASE_DIR / "serviceAccountKey.json"))
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://landa-demo-default-rtdb.firebaseio.com/'
     # Replace with your actual databaseURL from Firebase console
 })
 
 ref = db.reference('/')
+control_ref = db.reference('/control')
 
 # --- ROOM BASELINES ---
 # Each room has its own learned baseline variance.
@@ -158,6 +161,25 @@ def reset_all():
     alert_history.clear()
     print("[SIMULATOR] All rooms reset to normal.")
 
+
+def apply_remote_command():
+    """Apply control commands written by the mobile app to /control/command."""
+    command = control_ref.child("command").get()
+    if not command or not isinstance(command, dict):
+        return
+
+    cmd_type = command.get("type")
+    room = command.get("room")
+
+    if cmd_type == "fall" and room in room_states:
+        trigger_fall(room)
+    elif cmd_type == "pet" and room in room_states:
+        trigger_pet(room)
+    elif cmd_type == "reset":
+        reset_all()
+
+    control_ref.child("command").set(None)
+
 def write_to_firebase():
     """Main loop — writes complete home state to Firebase every second."""
     print("[SIMULATOR] Landa simulation running. Writing to Firebase...")
@@ -165,6 +187,9 @@ def write_to_firebase():
     
     while True:
         now = time.time()
+
+        # Pull and consume mobile-triggered control commands.
+        apply_remote_command()
         
         rooms_data = {}
         for room_name in ROOM_BASELINES:
