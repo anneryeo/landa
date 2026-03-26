@@ -7,6 +7,7 @@ import Dashboard from "./components/Dashboard";
 import AlertScreen from "./components/AlertScreen";
 import MapScreen from "./components/MapScreen";
 import SimulatorPanel from "./components/SimulatorPanel";
+import AdminControlPanel from "./components/AdminControlPanel";
 import "./App.css";
 
 const ONBOARDING_KEY = "landa_onboarded";
@@ -104,7 +105,13 @@ export default function App() {
 
       {/* Simulator bottom sheet */}
       {showSimulator && (
-        <SimulatorPanel onClose={() => setShowSimulator(false)} />
+          <div className="admin-overlay">
+            <AdminControlPanel
+              homeData={homeData}
+              loading={loading}
+              onClose={() => setShowSimulator(false)}
+            />
+          </div>
       )}
     </div>
   );
