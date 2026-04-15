@@ -14,7 +14,6 @@
 [![Expo](https://img.shields.io/badge/Expo-55-000020?logo=expo)](https://expo.dev)
 [![Python](https://img.shields.io/badge/Python-Simulator-3776AB?logo=python&logoColor=white)](backend/simulator/)
 
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
