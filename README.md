@@ -1,6 +1,7 @@
 <div align="center">
 
 <!-- Replace this image with a screenshot or demo GIF of the app -->
+
 <!-- ![Landa Demo](docs/demo.gif) -->
 
 # Project Landa
@@ -41,6 +42,7 @@ Landa is an **ambient intelligence platform** for passive, privacy-first home sa
 Small wall-plug devices (Laure Nodes) establish invisible sensing "corridors" between a home router and receiver. When the system detects something wrong, it sends an alert to caregivers in real time.
 
 **Built for:**
+
 - Elderly family members living alone
 - OFW (Overseas Filipino Workers) families monitoring loved ones from abroad
 - Anyone who can't always be physically present for the people they care about
@@ -50,17 +52,21 @@ Small wall-plug devices (Laure Nodes) establish invisible sensing "corridors" be
 ## Features
 
 ### Calm Dashboard
+
 The app stays minimal and quiet under normal conditions — a deliberate "Calm Tech" design choice. When the home is secure, the interface is soft and unobtrusive (`#FFF0F5` background). No noise unless there's a reason for noise.
 
 Shows live CSI variance readings per room, room protection status, and real-time Firebase connection indicator.
 
 ### Real-Time Fall Alert
+
 When a fall is detected, the app immediately escalates to a high-contrast, full-screen alert with one-tap access to emergency contacts. No digging through menus when seconds matter.
 
 ### Interactive Home Map
+
 A visual floor plan of the monitored home showing active Laure Node positions, sensing corridors, and per-room presence indicators. Caregivers can see exactly where in the home something happened.
 
 ### Two-Factor Fall Detection Algorithm
+
 Landa avoids false alarms by requiring both conditions to be true before triggering an alert:
 
 1. **CSI Variance Spike** — A sudden, catastrophic jump in CSI variance (delta > 0.65), indicating rapid mass displacement consistent with a fall.
@@ -69,32 +75,37 @@ Landa avoids false alarms by requiring both conditions to be true before trigger
 A single spike alone (like someone jumping or a door slamming) doesn't trigger an alert.
 
 ### Mass-Displacement Pet Filter
+
 A dog walking through a room creates minor, rapid CSI ripples that stay below the trigger threshold (< 0.35). The algorithm distinguishes the physical signature of a 10kg animal from a human fall, keeping false alarms suppressed without requiring any configuration.
 
 ### Prolonged Inactivity Detection
+
 Beyond falls, the system can flag when a room shows no macro-movement over an extended period — useful for detecting incapacitation scenarios or dementia-related wandering at unusual hours.
 
 ### Privacy-First by Design
+
 There are no cameras, no microphones, and no wearables. Landa monitors the space, not the person. The only data captured is abstract CSI variance numbers — no images, no biometrics, no video.
 
 ### Node Pairing & Onboarding
+
 A step-by-step setup flow guides users through initial configuration and Laure Node pairing. Nodes require a 10-minute calibration window to map room-specific Wi-Fi multipath fingerprints before active monitoring begins.
 
 ### Hardware Simulator (Demo Mode)
+
 For development and demonstration, a Python backend simulates the ESP32 hardware, pushing realistic CSI data to Firebase. Scenario triggers (fall, pet activity, reset) are available both from the terminal and from the app UI.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Web Dashboard | React 19 + Vite 8 |
-| Mobile App | React Native 0.83 + Expo 55 (TypeScript) |
-| Database | Firebase Realtime Database |
-| Charts | Recharts |
-| Hardware Simulator | Python + firebase-admin |
-| Target Hardware | ESP32 microcontroller |
+| Layer              | Technology                               |
+| ------------------ | ---------------------------------------- |
+| Web Dashboard      | React 19 + Vite 8                        |
+| Mobile App         | React Native 0.83 + Expo 55 (TypeScript) |
+| Database           | Firebase Realtime Database               |
+| Charts             | Recharts                                 |
+| Hardware Simulator | Python + firebase-admin                  |
+| Target Hardware    | ESP32 microcontroller                    |
 
 ---
 
@@ -190,6 +201,7 @@ landa/
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - Python 3.9+
 - For mobile: Android Studio (with emulator) or Xcode
@@ -215,6 +227,7 @@ python simulate.py
 ```
 
 The simulator streams live CSI data to Firebase. In the terminal, use keyboard commands to trigger scenarios:
+
 - `b` — trigger fall in **B**athroom
 - `r` — trigger fall in bed**R**oom
 - `p` — trigger **P**et movement
@@ -257,13 +270,13 @@ Together, they form an "Active + Passive" remote care ecosystem: Landa detects t
 
 ## Team
 
-| Name | Role |
-|------|------|
-| **Anne Reyes** | Concept, architecture, development |
-| **Shania Dela Vega** | Teammate |
-| **Louella Arce Ng** | Teammate |
-| **Kim Caryl Esperanza** | Teammate |
-| **Ms. Renilda S. Layno** | Adviser |
+| Name                           | Role                               |
+| ------------------------------ | ---------------------------------- |
+| **Anne Reyes**           | Concept, architecture, development |
+| **Shania Dela Vega**     | Teammate                           |
+| **Louella Arce Ng**      | Teammate                           |
+| **Kim Caryl Esperanza**  | Teammate                           |
+| **Ms. Renilda S. Layno** | Adviser                            |
 
 Built for the **Cambridge University Press & Assessment Philippines Women in Tech Hackathon 2026** — where we placed **3rd**.
 

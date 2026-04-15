@@ -31,3 +31,9 @@ ANNES-NOTES1.md
 ANNES-NOTES2.md
 PLAN1.md
 uiuxdesign/
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
