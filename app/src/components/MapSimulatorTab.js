@@ -25,18 +25,18 @@ const AnimatedRect   = Animated.createAnimatedComponent(Rect);
 
 // ── Color palette ─────────────────────────────────────
 const C = {
-  usu_koubai:   '#B5546A',
-  berry_good:   '#D4849A',
-  cream:        '#FDF6F0',
-  meadow_mauve: '#9F8A91',
-  navy:         '#16121D',
-  cyan:         '#29B0E3',
-  alert_red:    '#E74C3C',
-  alert_dark:   '#C0392B',
-  pet_yellow:   '#D4AC0D',
-  pet_dark:     '#B8960C',
-  room_light:   '#F5EDEC',
-  room_mid:     '#EDE8E2',
+  usu_koubai:   '#3B82F6',   // normal node fill — cool blue
+  berry_good:   '#60A5FA',   // normal node glow — lighter blue
+  cream:        '#E2E8F0',   // icon detail / text on dark surfaces
+  meadow_mauve: '#64748B',   // secondary labels — slate
+  navy:         '#1E3A5F',   // router icon body — dark navy
+  cyan:         '#38BDF8',   // normal signal link — sky blue
+  alert_red:    '#EF4444',   // critical alert
+  alert_dark:   '#DC2626',   // alert dark variant
+  pet_yellow:   '#FBBF24',   // pet event — amber
+  pet_dark:     '#D97706',   // pet dark variant
+  room_light:   '#0C1628',   // room fill A — dark navy
+  room_mid:     '#0A1220',   // room fill B — deeper navy
 };
 
 // ── Scenario keys ─────────────────────────────────────
@@ -80,13 +80,13 @@ const LOG_DATA = {
 };
 
 const LOG_COLORS = {
-  info:     '#29B0E3',
-  data:     '#928E5E',
-  secure:   '#5DB870',
-  warning:  '#E67E22',
-  alert:    '#E74C3C',
-  critical: '#C0392B',
-  pet:      '#D4AC0D',
+  info:     '#38BDF8',   // sky blue
+  data:     '#60A5FA',   // soft blue
+  secure:   '#34D399',   // emerald
+  warning:  '#FB923C',   // orange
+  alert:    '#F87171',   // rose red
+  critical: '#EF4444',   // bright red
+  pet:      '#FBBF24',   // amber
 };
 
 // ── SVG layout constants ──────────────────────────────
@@ -284,11 +284,13 @@ function FloorPlanSvg({ scenario }) {
           <Rect
             x={r.x} y={r.y} width={r.w} height={r.h}
             fill={roomFills[key]}
-            stroke={C.usu_koubai}
-            strokeWidth={1.5}
-            rx={6}
+            stroke={C.cyan}
+            strokeOpacity={0.3}
+            strokeWidth={1}
+            strokeDasharray="6 3"
+            rx={4}
           />
-          <SvgText x={r.x + 10} y={r.y + 18} fontSize={9} fill={C.meadow_mauve} fontWeight="700">
+          <SvgText x={r.x + 8} y={r.y + 16} fontSize={8} fill={C.meadow_mauve} fontWeight="700" letterSpacing={1}>
             {r.label}
           </SvgText>
         </G>
@@ -310,8 +312,8 @@ function FloorPlanSvg({ scenario }) {
 
       {/* Router */}
       <RouterIcon x={ROUTER.x} y={ROUTER.y} />
-      <SvgText x={ROUTER.x} y={ROUTER.y + 22} fontSize={8} fill={C.navy} textAnchor="middle" fontWeight="600">
-        Router
+      <SvgText x={ROUTER.x} y={ROUTER.y + 22} fontSize={8} fill={C.cream} textAnchor="middle" fontWeight="600">
+        MAIN ROUTER
       </SvgText>
 
       {/* Nodes */}
@@ -356,7 +358,7 @@ export default function MapSimulatorTab() {
 
   const isAlert     = scenario === S.BATHROOM_FALL || scenario === S.BEDROOM_FALL;
   const statusLabel = isAlert ? 'Alert Active' : scenario === S.PET_LIVING ? 'Pet Detected' : 'All Secure';
-  const statusColor = isAlert ? '#E74C3C'       : scenario === S.PET_LIVING ? '#D4AC0D'      : '#5DB870';
+  const statusColor = isAlert ? '#EF4444'       : scenario === S.PET_LIVING ? '#FBBF24'      : '#34D399';
 
   return (
     <View style={s.container}>
@@ -430,28 +432,28 @@ export default function MapSimulatorTab() {
 }
 
 const s = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: '#1a1525' },
-  header:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 14, paddingTop: 10, borderBottomWidth: 1, borderBottomColor: '#2e2640' },
+  container:    { flex: 1, backgroundColor: '#0B0F1A' },
+  header:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 14, paddingTop: 10, borderBottomWidth: 1, borderBottomColor: '#1D2D44' },
   headerText:   { flex: 1, marginRight: 8 },
-  title:        { color: '#fff', fontSize: 16, fontWeight: '700' },
-  subtitle:     { color: '#9F8A91', fontSize: 11, marginTop: 2 },
+  title:        { color: '#F1F5F9', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
+  subtitle:     { color: '#475569', fontSize: 11, marginTop: 2 },
   statusPill:   { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   statusDot:    { width: 7, height: 7, borderRadius: 4 },
   statusLabel:  { fontSize: 11, fontWeight: '700' },
   scroll:       { flex: 1 },
   scrollContent:{ paddingBottom: 24 },
-  mapPanel:     { backgroundColor: '#12101a', paddingBottom: 4 },
-  panelLabel:   { color: '#5c5070', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 4, textTransform: 'uppercase' },
-  feedPanel:    { marginHorizontal: 12, marginTop: 10, backgroundColor: '#0e0d14', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#2a1f38' },
+  mapPanel:     { backgroundColor: '#070C14', paddingBottom: 4 },
+  panelLabel:   { color: '#334155', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 4, textTransform: 'uppercase' },
+  feedPanel:    { marginHorizontal: 12, marginTop: 10, backgroundColor: '#060B14', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#1D2D44' },
   feedBody:     { gap: 4 },
-  feedEmpty:    { color: '#4a3f5c', fontSize: 12, fontStyle: 'italic' },
+  feedEmpty:    { color: '#334155', fontSize: 12, fontStyle: 'italic' },
   logEntry:     { fontSize: 11, lineHeight: 18, fontFamily: 'monospace' },
   controlPanel: { marginHorizontal: 12, marginTop: 10 },
   btnGrid:      { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
   ctrlBtn:      { width: '48%', borderRadius: 10, paddingVertical: 12, alignItems: 'center', opacity: 0.75 },
-  ctrlActive:   { opacity: 1, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.33)' },
-  btnSecure:    { backgroundColor: '#2a4a3a' },
-  btnAlert:     { backgroundColor: '#4a2030' },
-  btnPet:       { backgroundColor: '#3a3a0a' },
-  ctrlText:     { color: '#fff', fontWeight: '700', fontSize: 12, textAlign: 'center' },
+  ctrlActive:   { opacity: 1, borderWidth: 1.5, borderColor: 'rgba(56,189,248,0.45)' },
+  btnSecure:    { backgroundColor: '#0C2A1A' },
+  btnAlert:     { backgroundColor: '#2A0E18' },
+  btnPet:       { backgroundColor: '#1C1500' },
+  ctrlText:     { color: '#E2E8F0', fontWeight: '700', fontSize: 12, textAlign: 'center' },
 });
