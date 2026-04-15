@@ -2,12 +2,12 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import {
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { database, onValue, ref, set } from "./src/firebase";
 import MapSimulatorTab from "./src/components/MapSimulatorTab";
 
@@ -45,16 +45,19 @@ export default function App() {
 
   if (phase === "splash") {
     return (
+      <SafeAreaProvider>
       <SafeAreaView style={styles.splashWrap}>
         <StatusBar style="light" />
         <Text style={styles.splashTitle}>Landa</Text>
         <Text style={styles.splashSub}>Wi-Fi Home Safety</Text>
       </SafeAreaView>
+      </SafeAreaProvider>
     );
   }
 
   if (phase === "onboarding") {
     return (
+      <SafeAreaProvider>
       <SafeAreaView style={styles.onboardingWrap}>
         <StatusBar style="dark" />
         <Text style={styles.onboardingTitle}>Calm care, without cameras.</Text>
@@ -66,10 +69,12 @@ export default function App() {
           <Text style={styles.primaryBtnText}>Continue</Text>
         </Pressable>
       </SafeAreaView>
+      </SafeAreaProvider>
     );
   }
 
   return (
+    <SafeAreaProvider>
     <SafeAreaView style={styles.appWrap}>
       <StatusBar style="dark" />
 
@@ -109,6 +114,7 @@ export default function App() {
         />
       )}
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
