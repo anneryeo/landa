@@ -1,8 +1,6 @@
 <div align="center">
 
-<!-- Replace this image with a screenshot or demo GIF of the app -->
-
-<!-- ![Landa Demo](docs/demo.gif) -->
+![Landa Map Simulation Demo](docs\mapsimulation.gif)
 
 # Project Landa
 
@@ -15,9 +13,9 @@
 [![Firebase](https://img.shields.io/badge/Firebase-Realtime_DB-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com)
 [![Expo](https://img.shields.io/badge/Expo-55-000020?logo=expo)](https://expo.dev)
 [![Python](https://img.shields.io/badge/Python-Simulator-3776AB?logo=python&logoColor=white)](backend/simulator/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-</div>
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
