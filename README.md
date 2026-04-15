@@ -1,6 +1,6 @@
 <div align="center">
 
-![Landa Map Simulation Demo](docs\mapsimulation.gif)
+![Landa Map Simulation Demo](docs/mapsimulation.gif)
 
 # Project Landa
 
