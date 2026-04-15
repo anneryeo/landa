@@ -200,49 +200,7 @@ landa/
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- Python 3.9+
-- For mobile: Android Studio (with emulator) or Xcode
-
-### 1. Run the Web Dashboard
-
-```bash
-cd frontend/webapp
-npm install
-npm run dev
-```
-
-Open `http://localhost:5173`.
-
-### 2. Run the Hardware Simulator
-
-In a separate terminal:
-
-```bash
-cd backend/simulator
-pip install -r requirements.txt
-python simulate.py
-```
-
-The simulator streams live CSI data to Firebase. In the terminal, use keyboard commands to trigger scenarios:
-
-- `b` — trigger fall in **B**athroom
-- `r` — trigger fall in bed**R**oom
-- `p` — trigger **P**et movement
-- `x` — reset all rooms
-- `q` — quit
-
-### 3. Run the Mobile App (Android)
-
-Make sure you have an Android emulator running in Android Studio, then:
-
-```bash
-cd frontend/mobile
-npm install
-npm run android
-```
+See [GETTING-STARTED.md](GETTING-STARTED.md) for full setup and run instructions.
 
 ---
 
