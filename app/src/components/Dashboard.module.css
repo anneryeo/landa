@@ -1,0 +1,260 @@
+/* Dashboard ─────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 32px 28px 48px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logoMark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--usu-koubai);
+  color: var(--cream);
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: -1px;
+  flex-shrink: 0;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--soldier-green);
+  letter-spacing: -0.3px;
+}
+
+.tagline {
+  font-size: 12px;
+  color: var(--meadow-mauve);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.connBadge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--meadow-mauve);
+  background: var(--warm-fog);
+  padding: 5px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.connDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5DB870;
+}
+
+/* Hero card */
+.heroCard {
+  background: var(--white);
+  border: 1.5px solid var(--berry-good);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.heroIconWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.shieldIcon {
+  width: 52px;
+  height: 52px;
+}
+
+.pulseRing {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--berry-good);
+  animation: pulseRing 2s ease-out infinite;
+  pointer-events: none;
+}
+
+.statusText {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--soldier-green);
+  margin-bottom: 4px;
+  letter-spacing: -0.4px;
+}
+
+.statusSub {
+  font-size: 13px;
+  color: var(--meadow-mauve);
+  font-weight: 400;
+}
+
+/* Sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--meadow-mauve);
+}
+
+/* Node cards */
+.nodeGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nodeCard {
+  background: var(--white);
+  border: 1.5px solid var(--warm-fog);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-soft);
+  transition: border-color 0.2s;
+}
+
+.nodeCard:hover {
+  border-color: var(--berry-good);
+}
+
+.nodeIconWrap {
+  width: 38px;
+  height: 38px;
+  background: var(--warm-fog);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nodeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.nodeRoom {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--soldier-green);
+}
+
+.nodeId {
+  font-size: 11px;
+  color: var(--meadow-mauve);
+  font-family: 'Courier New', monospace;
+}
+
+.nodeStatus {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5DB870;
+  background: #E8F5E9;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+/* Pills */
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--warm-fog);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--soldier-green);
+}
+
+.pillIcon {
+  font-size: 14px;
+}
+
+.about {
+  font-size: 13.5px;
+  color: var(--meadow-mauve);
+  line-height: 1.7;
+}
+
+/* CTA */
+.ctaWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.ctaButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soldier-green);
+  color: var(--cream);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: var(--radius-md);
+  letter-spacing: 0.2px;
+  transition: background 0.2s, transform 0.15s;
+  box-shadow: 0 4px 14px rgba(87, 85, 39, 0.25);
+}
+
+.ctaButton:hover {
+  background: var(--usu-koubai);
+  transform: translateY(-1px);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
+
+.ctaNote {
+  font-size: 12px;
+  color: var(--meadow-mauve);
+}
