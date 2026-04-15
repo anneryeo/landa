@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useEffect } from "react";
 import "../styles/AdminControlPanel.css";
+import { database, ref, set } from "../firebase";
 
 export default function AdminControlPanel({ homeData, loading, onClose }) {
   const canvasRef = useRef(null);
@@ -110,23 +111,27 @@ export default function AdminControlPanel({ homeData, loading, onClose }) {
   };
 
   // Trigger scenario via Firebase (update room state)
-  const triggerScenario = (roomName, mode) => {
-    console.log(
-      `[AdminControlPanel] Scenario triggered: ${roomName} = ${mode}`
-    );
-    // This would wire to Firebase to update room state that simulator watches
-    // For now, just log - simulator controls via stdin in Python
+  const triggerScenario = async (roomName, mode) => {
+    const payload = {
+      type: mode,
+      room: roomName ?? null,
+      ts: Date.now(),
+    };
+    await set(ref(database, "/control/command"), payload);
+
+    // Fallback simulator mode for web-only runs when Python simulator isn't active.
+    const simulatedState = buildSimulatedHomeState(homeData, mode, roomName);
+    await set(ref(database, "/"), simulatedState);
   };
 
   const resetAll = () => {
-    console.log("[AdminControlPanel] Reset all rooms");
-    triggerScenario("all", "reset");
+    triggerScenario(null, "reset");
   };
 
   // Extract data
   const rooms = homeData?.rooms || {};
   const systemStatus = homeData?.system_status || "all_secure";
-  const csiVariance = homeData?.csi_variance || 0;
+  const csiVariance = getAggregateVariance(rooms) || 0;
 
   const formatStatus = (status) => {
     if (status === "all_secure") return "All Secure";
@@ -198,14 +203,14 @@ export default function AdminControlPanel({ homeData, loading, onClose }) {
         <button
           type="button"
           className="admin-btn admin-btn-danger"
-          onClick={() => triggerScenario("bathroom", "fall_spike")}
+          onClick={() => triggerScenario("bathroom", "fall")}
         >
           Trigger Bathroom Fall
         </button>
         <button
           type="button"
           className="admin-btn admin-btn-danger"
-          onClick={() => triggerScenario("bedroom", "fall_spike")}
+          onClick={() => triggerScenario("bedroom", "fall")}
         >
           Trigger Bedroom Fall
         </button>
@@ -225,4 +230,67 @@ export default function AdminControlPanel({ homeData, loading, onClose }) {
       </div>
     </section>
   );
+}
+
+function buildSimulatedHomeState(existingHomeData, mode, roomName) {
+  const now = Math.floor(Date.now() / 1000);
+  const currentRooms = existingHomeData?.rooms || {};
+
+  const createRoom = (key, baseline, nodeId) => ({
+    status: "normal",
+    csi_variance: currentRooms[key]?.csi_variance ?? baseline,
+    baseline_variance: baseline,
+    delta_from_baseline:
+      (currentRooms[key]?.csi_variance ?? baseline) - baseline,
+    last_updated: now,
+    node_id: nodeId,
+    stillness_confirmed: false,
+    alert_type: null,
+  });
+
+  const rooms = {
+    bathroom: createRoom("bathroom", 0.04, "laure_node_02"),
+    bedroom: createRoom("bedroom", 0.05, "laure_node_01"),
+    living_room: createRoom("living_room", 0.09, "laure_node_03"),
+  };
+
+  if (mode === "fall" && roomName && rooms[roomName]) {
+    rooms[roomName] = {
+      ...rooms[roomName],
+      status: "anomaly_fall",
+      csi_variance: 0.89,
+      delta_from_baseline: 0.89 - rooms[roomName].baseline_variance,
+      stillness_confirmed: true,
+      alert_type: "fall_detected",
+    };
+  }
+
+  if (mode === "pet" && roomName && rooms[roomName]) {
+    rooms[roomName] = {
+      ...rooms[roomName],
+      status: "normal",
+      csi_variance: 0.22,
+      delta_from_baseline: 0.22 - rooms[roomName].baseline_variance,
+      stillness_confirmed: false,
+      alert_type: null,
+    };
+  }
+
+  const anyAlert = Object.values(rooms).some((room) => room.alert_type === "fall_detected");
+
+  return {
+    home_id: existingHomeData?.home_id || "landa_demo_001",
+    rooms,
+    alert_history: existingHomeData?.alert_history || [],
+    system_status: anyAlert ? "alert_active" : "all_secure",
+    last_sync: now,
+  };
+}
+
+function getAggregateVariance(rooms) {
+  const values = Object.values(rooms)
+    .map((room) => room?.csi_variance)
+    .filter((v) => typeof v === "number");
+  if (!values.length) return undefined;
+  return values.reduce((sum, n) => sum + n, 0) / values.length;
 }

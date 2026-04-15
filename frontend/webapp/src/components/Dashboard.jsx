@@ -4,7 +4,7 @@ export default function Dashboard({
   connectionStatus,
   onOpenSimulator,
 }) {
-  const csiVariance = homeData?.csi_variance;
+  const csiVariance = getAggregateVariance(homeData?.rooms);
   const statusText = loading
     ? "Loading status..."
     : homeData?.system_status
@@ -14,11 +14,15 @@ export default function Dashboard({
   const nodes = [
     {
       name: "Living Room",
-      value: valueOrFallback(homeData?.living_room?.csi_variance, csiVariance),
+      value: valueOrFallback(homeData?.rooms?.living_room?.csi_variance, csiVariance),
     },
     {
       name: "Bedroom",
-      value: valueOrFallback(homeData?.bedroom?.csi_variance, csiVariance),
+      value: valueOrFallback(homeData?.rooms?.bedroom?.csi_variance, csiVariance),
+    },
+    {
+      name: "Bathroom",
+      value: valueOrFallback(homeData?.rooms?.bathroom?.csi_variance, csiVariance),
     },
   ];
 
@@ -91,4 +95,13 @@ function formatVariance(value) {
 function valueOrFallback(value, fallback) {
   if (typeof value === "number") return value.toFixed(4);
   return formatVariance(fallback);
+}
+
+function getAggregateVariance(rooms) {
+  if (!rooms) return undefined;
+  const values = Object.values(rooms)
+    .map((room) => room?.csi_variance)
+    .filter((v) => typeof v === "number");
+  if (!values.length) return undefined;
+  return values.reduce((sum, n) => sum + n, 0) / values.length;
 }

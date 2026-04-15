@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   SafeAreaView,
@@ -7,10 +7,15 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { database, onValue, ref, set } from "./src/firebase";
+import DashboardScreen from "./src/screens/DashboardScreen";
 
 export default function App() {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 390;
+
   const [phase, setPhase] = useState("splash");
   const [activeTab, setActiveTab] = useState("home");
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -21,7 +26,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase("onboarding");
-    }, 1200);
+    }, 1100);
     return () => clearTimeout(timer);
   }, []);
 
@@ -49,8 +54,9 @@ export default function App() {
     return (
       <SafeAreaView style={styles.splashWrap}>
         <StatusBar style="light" />
+        <View style={styles.splashOrb} />
         <Text style={styles.splashTitle}>Landa</Text>
-        <Text style={styles.splashSub}>Wi-Fi Home Safety</Text>
+        <Text style={styles.splashSub}>Soft safety, always on</Text>
       </SafeAreaView>
     );
   }
@@ -59,14 +65,17 @@ export default function App() {
     return (
       <SafeAreaView style={styles.onboardingWrap}>
         <StatusBar style="dark" />
-        <Text style={styles.onboardingTitle}>Calm care, without cameras.</Text>
-        <Text style={styles.onboardingBody}>
-          This MVP monitors motion patterns using Wi-Fi CSI and raises alerts for
-          possible falls.
-        </Text>
-        <Pressable style={styles.primaryBtn} onPress={() => setPhase("app")}>
-          <Text style={styles.primaryBtnText}>Continue</Text>
-        </Pressable>
+        <View style={styles.onboardingCard}>
+          <Text style={styles.onboardingBadge}>WELCOME</Text>
+          <Text style={styles.onboardingTitle}>A gentler way to care at home.</Text>
+          <Text style={styles.onboardingBody}>
+            Landa uses Wi-Fi sensing to detect patterns and surface possible falls.
+            No cameras, no invasive setup.
+          </Text>
+          <Pressable style={styles.primaryBtn} onPress={() => setPhase("app")}>
+            <Text style={styles.primaryBtnText}>Enter Dashboard</Text>
+          </Pressable>
+        </View>
       </SafeAreaView>
     );
   }
@@ -79,18 +88,37 @@ export default function App() {
 
       {!isAlert && !showAdminPanel && (
         <>
-          <ScrollView style={styles.content} contentContainerStyle={styles.contentPad}>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={[
+              styles.contentPad,
+              isCompact ? styles.contentPadCompact : null,
+            ]}
+          >
             {activeTab === "home" && (
               <HomeTab
                 homeData={homeData}
                 loading={loading}
                 connectionStatus={connectionStatus}
                 onOpenAdmin={() => setShowAdminPanel(true)}
+                compact={isCompact}
               />
             )}
-            {activeTab === "map" && <SimpleTab title="Map" text="Room mapping placeholder for MVP." />}
-            {activeTab === "alerts" && <SimpleTab title="Alerts" text="No recent alerts." />}
-            {activeTab === "settings" && <SimpleTab title="Settings" text="Account and notification options." />}
+            {activeTab === "map" && (
+              <DashboardScreen />
+            )}
+            {activeTab === "alerts" && (
+              <SimpleTab
+                title="Alerts"
+                text="No recent alerts right now. You will be notified instantly."
+              />
+            )}
+            {activeTab === "settings" && (
+              <SimpleTab
+                title="Settings"
+                text="Profile, notifications, and privacy options coming next."
+              />
+            )}
           </ScrollView>
 
           <BottomTabs activeTab={activeTab} onSelect={setActiveTab} />
@@ -102,34 +130,80 @@ export default function App() {
           homeData={homeData}
           loading={loading}
           onClose={() => setShowAdminPanel(false)}
+          compact={isCompact}
         />
       )}
     </SafeAreaView>
   );
 }
 
-function HomeTab({ homeData, loading, connectionStatus, onOpenAdmin }) {
-  const status = homeData?.system_status || "all_secure";
+function HomeTab({ homeData, loading, connectionStatus, onOpenAdmin, compact }) {
+  const statusLabel = prettifyStatus(homeData?.system_status || "all_secure");
+  const cards = useMemo(
+    () => [
+      {
+        name: "Bathroom",
+        variance: formatVariance(homeData?.rooms?.bathroom?.csi_variance),
+      },
+      {
+        name: "Bedroom",
+        variance: formatVariance(homeData?.rooms?.bedroom?.csi_variance),
+      },
+      {
+        name: "Living Room",
+        variance: formatVariance(homeData?.rooms?.living_room?.csi_variance),
+      },
+    ],
+    [homeData]
+  );
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>Home Dashboard</Text>
-      <Text style={styles.cardRow}>System: {status}</Text>
-      <Text style={styles.cardRow}>Connection: {connectionStatus}</Text>
-      <Text style={styles.cardRow}>
-        Bathroom variance: {formatVariance(homeData?.rooms?.bathroom?.csi_variance)}
-      </Text>
-      <Text style={styles.cardRow}>
-        Bedroom variance: {formatVariance(homeData?.rooms?.bedroom?.csi_variance)}
-      </Text>
-      <Text style={styles.cardRow}>
-        Living room variance: {formatVariance(homeData?.rooms?.living_room?.csi_variance)}
-      </Text>
+    <View style={styles.homeWrap}>
+      <View style={styles.heroCard}>
+        <Text style={styles.heroEyebrow}>Realtime Status</Text>
+        <Text style={styles.heroTitle}>Everything feels calm.</Text>
+        <Text style={styles.heroSubtitle}>System: {statusLabel}</Text>
+
+        <View style={styles.chipsRow}>
+          <StatusChip
+            label={connectionStatus === "live" ? "Connected" : "Offline"}
+            tone={connectionStatus === "live" ? "good" : "warn"}
+          />
+          <StatusChip
+            label={loading ? "Syncing..." : "Live"}
+            tone={loading ? "muted" : "good"}
+          />
+        </View>
+      </View>
+
+      <View style={styles.roomsGrid}>
+        {cards.map((room) => (
+          <View key={room.name} style={styles.roomCard}>
+            <Text style={styles.roomName}>{room.name}</Text>
+            <Text style={styles.roomVariance}>CSI {room.variance}</Text>
+          </View>
+        ))}
+      </View>
 
       <Pressable style={styles.primaryBtn} onPress={onOpenAdmin}>
-        <Text style={styles.primaryBtnText}>Open Simulator Controls</Text>
+        <Text style={[styles.primaryBtnText, compact ? styles.btnTextCompact : null]}>
+          Simulator Controls
+        </Text>
       </Pressable>
+    </View>
+  );
+}
 
-      {loading && <Text style={styles.muted}>Loading realtime data...</Text>}
+function StatusChip({ label, tone }) {
+  const toneStyle =
+    tone === "good"
+      ? styles.chipGood
+      : tone === "warn"
+      ? styles.chipWarn
+      : styles.chipMuted;
+  return (
+    <View style={[styles.chip, toneStyle]}>
+      <Text style={styles.chipText}>{label}</Text>
     </View>
   );
 }
@@ -137,33 +211,42 @@ function HomeTab({ homeData, loading, connectionStatus, onOpenAdmin }) {
 function AlertView({ status }) {
   return (
     <View style={styles.alertWrap}>
-      <Text style={styles.alertTitle}>Potential Fall Detected</Text>
-      <Text style={styles.alertSub}>{status}</Text>
+      <Text style={styles.alertTitle}>Possible Fall Detected</Text>
+      <Text style={styles.alertSub}>{prettifyStatus(status || "anomaly_fall")}</Text>
+      <Text style={styles.alertHint}>Please check in with your loved one now.</Text>
     </View>
   );
 }
 
 function SimpleTab({ title, text }) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardRow}>{text}</Text>
+    <View style={styles.simpleTabCard}>
+      <Text style={styles.simpleTabTitle}>{title}</Text>
+      <Text style={styles.simpleTabBody}>{text}</Text>
     </View>
   );
 }
 
 function BottomTabs({ activeTab, onSelect }) {
-  const tabs = ["home", "map", "alerts", "settings"];
+  const tabs = [
+    { id: "home", label: "Home" },
+    { id: "map", label: "Map" },
+    { id: "alerts", label: "Alerts" },
+    { id: "settings", label: "Settings" },
+  ];
+
   return (
     <View style={styles.bottomTabs}>
       {tabs.map((tab) => (
         <Pressable
-          key={tab}
-          style={[styles.tabBtn, activeTab === tab && styles.tabBtnActive]}
-          onPress={() => onSelect(tab)}
+          key={tab.id}
+          style={[styles.tabBtn, activeTab === tab.id ? styles.tabBtnActive : null]}
+          onPress={() => onSelect(tab.id)}
         >
-          <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-            {tab}
+          <Text
+            style={[styles.tabText, activeTab === tab.id ? styles.tabTextActive : null]}
+          >
+            {tab.label}
           </Text>
         </Pressable>
       ))}
@@ -171,8 +254,8 @@ function BottomTabs({ activeTab, onSelect }) {
   );
 }
 
-function AdminPanel({ homeData, loading, onClose }) {
-  const status = homeData?.system_status || "all_secure";
+function AdminPanel({ homeData, loading, onClose, compact }) {
+  const status = prettifyStatus(homeData?.system_status || "all_secure");
 
   const sendCommand = async (type, room) => {
     await set(ref(database, "/control/command"), {
@@ -185,27 +268,27 @@ function AdminPanel({ homeData, loading, onClose }) {
   return (
     <SafeAreaView style={styles.adminWrap}>
       <View style={styles.adminTop}>
-        <View>
-          <Text style={styles.adminTitle}>Wi-Fi Sensing: Home Presence Detection</Text>
-          <Text style={styles.adminSub}>Baseline CSI established. Environment stable.</Text>
+        <View style={styles.adminTitleWrap}>
+          <Text style={styles.adminTitle}>Wi-Fi Presence Studio</Text>
+          <Text style={styles.adminSub}>Live home map with one-tap controls</Text>
         </View>
         <Pressable style={styles.closeBtn} onPress={onClose}>
-          <Text style={styles.closeBtnText}>Close</Text>
+          <Text style={styles.closeBtnText}>Done</Text>
         </Pressable>
       </View>
 
       <View style={styles.statusRow}>
-        <Text style={styles.statusText}>STATUS: {status}</Text>
+        <Text style={styles.statusText}>Status: {status}</Text>
         <Text style={styles.statusText}>
-          CSI: {formatVariance(homeData?.rooms?.living_room?.csi_variance)}
+          Living CSI: {formatVariance(homeData?.rooms?.living_room?.csi_variance)}
         </Text>
-        <Text style={styles.statusText}>{loading ? "SYNC: LOADING" : "SYNC: LIVE"}</Text>
+        <Text style={styles.statusText}>{loading ? "Sync: Loading" : "Sync: Live"}</Text>
       </View>
 
-      <FloorPlan />
+      <FloorPlan compact={compact} />
 
       <View style={styles.controlGrid}>
-        <Pressable style={[styles.ctrlBtn, styles.ctrlSafe]} onPress={() => sendCommand("reset") }>
+        <Pressable style={[styles.ctrlBtn, styles.ctrlSafe]} onPress={() => sendCommand("reset")}>
           <Text style={styles.ctrlText}>Reset All Secure</Text>
         </Pressable>
         <Pressable
@@ -231,9 +314,9 @@ function AdminPanel({ homeData, loading, onClose }) {
   );
 }
 
-function FloorPlan() {
+function FloorPlan({ compact }) {
   return (
-    <View style={styles.planOuter}>
+    <View style={[styles.planOuter, compact ? styles.planOuterCompact : null]}>
       <View style={[styles.room, styles.bathroom]}>
         <Text style={styles.roomLabel}>BATHROOM</Text>
       </View>
@@ -246,9 +329,9 @@ function FloorPlan() {
       <View style={[styles.room, styles.living]}>
         <Text style={styles.roomLabel}>LIVING ROOM</Text>
       </View>
-      <View style={[styles.nodeDot, { top: 120, left: 92 }]} />
-      <View style={[styles.nodeDot, { top: 96, left: 238 }]} />
-      <View style={[styles.nodeDot, { top: 216, left: 178 }]} />
+      <View style={[styles.nodeDot, styles.nodeBath]} />
+      <View style={[styles.nodeDot, styles.nodeBed]} />
+      <View style={[styles.nodeDot, styles.nodeLiving]} />
     </View>
   );
 }
@@ -258,225 +341,380 @@ function formatVariance(value) {
   return "--";
 }
 
+function prettifyStatus(status) {
+  return status
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 const styles = StyleSheet.create({
   splashWrap: {
     flex: 1,
-    backgroundColor: "#211723",
+    backgroundColor: "#2b1727",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 10,
+  },
+  splashOrb: {
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    backgroundColor: "#f6afc7",
+    shadowColor: "#f6afc7",
+    shadowOpacity: 0.6,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 8 },
   },
   splashTitle: {
-    color: "#ffffff",
-    fontSize: 34,
+    color: "#fff",
+    fontSize: 36,
     fontWeight: "700",
+    letterSpacing: 0.2,
   },
   splashSub: {
-    color: "#cc9eaa",
-    letterSpacing: 1.5,
+    color: "#f3c9d7",
+    fontSize: 13,
+    letterSpacing: 1.2,
     textTransform: "uppercase",
-    fontSize: 12,
   },
   onboardingWrap: {
     flex: 1,
-    backgroundColor: "#f8ede8",
-    padding: 24,
+    backgroundColor: "#fff2f7",
+    padding: 22,
     justifyContent: "center",
-    gap: 16,
+  },
+  onboardingCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    borderColor: "#f4d9e6",
+    borderWidth: 1,
+    padding: 24,
+    gap: 14,
+    shadowColor: "#b24f74",
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  onboardingBadge: {
+    color: "#c05d84",
+    fontSize: 11,
+    letterSpacing: 1.3,
+    fontWeight: "700",
   },
   onboardingTitle: {
-    fontSize: 28,
+    fontSize: 30,
+    lineHeight: 36,
     fontWeight: "700",
-    color: "#2d2028",
+    color: "#351e2d",
   },
   onboardingBody: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#5a4550",
+    color: "#705066",
   },
   appWrap: {
     flex: 1,
-    backgroundColor: "#fdf6f0",
+    backgroundColor: "#fff7fb",
   },
   content: {
     flex: 1,
   },
   contentPad: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    gap: 8,
+  contentPadCompact: {
+    paddingHorizontal: 12,
+  },
+  homeWrap: {
+    gap: 14,
+  },
+  heroCard: {
+    backgroundColor: "#ffe4ef",
+    borderRadius: 22,
+    borderColor: "#f3bcd2",
     borderWidth: 1,
-    borderColor: "#f0dde2",
+    padding: 18,
+    gap: 8,
   },
-  cardTitle: {
-    fontSize: 20,
+  heroEyebrow: {
+    color: "#bb5a82",
+    fontSize: 11,
     fontWeight: "700",
-    color: "#2d2028",
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
   },
-  cardRow: {
-    color: "#4f3d46",
+  heroTitle: {
+    color: "#321c2b",
+    fontSize: 26,
+    lineHeight: 30,
+    fontWeight: "700",
+  },
+  heroSubtitle: {
+    color: "#6e4d61",
     fontSize: 14,
   },
-  muted: {
-    color: "#8f7f86",
+  chipsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 2,
+  },
+  chip: {
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  chipGood: {
+    backgroundColor: "#d5f5e4",
+  },
+  chipWarn: {
+    backgroundColor: "#ffe3d9",
+  },
+  chipMuted: {
+    backgroundColor: "#efe8ee",
+  },
+  chipText: {
+    color: "#51394a",
     fontSize: 12,
+    fontWeight: "600",
+  },
+  roomsGrid: {
+    gap: 10,
+  },
+  roomCard: {
+    backgroundColor: "#fff",
+    borderColor: "#f2dfe8",
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  roomName: {
+    fontSize: 15,
+    color: "#3a2431",
+    fontWeight: "600",
+  },
+  roomVariance: {
+    fontSize: 13,
+    color: "#7e6273",
+    fontWeight: "600",
   },
   primaryBtn: {
-    backgroundColor: "#b5546a",
-    borderRadius: 12,
-    paddingVertical: 12,
+    backgroundColor: "#c95d88",
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
+    shadowColor: "#c95d88",
+    shadowOpacity: 0.26,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   primaryBtnText: {
-    color: "#ffffff",
+    color: "#fff",
     fontWeight: "700",
+    letterSpacing: 0.2,
+    fontSize: 15,
+  },
+  btnTextCompact: {
+    fontSize: 14,
+  },
+  simpleTabCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#f2dfe8",
+    padding: 18,
+    gap: 8,
+  },
+  simpleTabTitle: {
+    color: "#35212f",
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  simpleTabBody: {
+    color: "#6c4e61",
+    fontSize: 14,
+    lineHeight: 20,
   },
   bottomTabs: {
     flexDirection: "row",
     borderTopWidth: 1,
-    borderTopColor: "#ecd9df",
+    borderTopColor: "#f0dce6",
     backgroundColor: "#fff",
     paddingVertical: 8,
+    paddingHorizontal: 6,
   },
   tabBtn: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginHorizontal: 4,
+    paddingVertical: 10,
+    borderRadius: 12,
   },
   tabBtnActive: {
-    backgroundColor: "#f8e7ec",
+    backgroundColor: "#ffe9f2",
   },
   tabText: {
-    textTransform: "capitalize",
-    color: "#9f8a91",
+    color: "#9b7d8d",
+    fontSize: 12,
+    fontWeight: "600",
   },
   tabTextActive: {
-    color: "#b5546a",
-    fontWeight: "700",
+    color: "#c45782",
   },
   alertWrap: {
     flex: 1,
-    backgroundColor: "#b5253a",
+    backgroundColor: "#bd3656",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    paddingHorizontal: 20,
+    gap: 8,
   },
   alertTitle: {
     color: "#fff",
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "800",
+    textAlign: "center",
   },
   alertSub: {
-    color: "#ffd6dd",
+    color: "#ffd9e6",
     fontSize: 14,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  alertHint: {
+    color: "#ffd9e6",
+    fontSize: 13,
+    textAlign: "center",
   },
   adminWrap: {
     flex: 1,
-    backgroundColor: "#16121d",
-    padding: 14,
-    gap: 12,
+    backgroundColor: "#2a1324",
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 14,
+    gap: 10,
   },
   adminTop: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 12,
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  adminTitleWrap: {
+    flex: 1,
+    gap: 2,
   },
   adminTitle: {
-    color: "#ffffff",
+    color: "#fff",
     fontSize: 18,
     fontWeight: "700",
   },
   adminSub: {
-    color: "#c6bccb",
+    color: "#e8c8d8",
     fontSize: 12,
-    marginTop: 2,
   },
   closeBtn: {
-    backgroundColor: "#302538",
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    backgroundColor: "#5d304b",
+    borderRadius: 12,
+    paddingHorizontal: 13,
     paddingVertical: 8,
-    alignSelf: "flex-start",
   },
   closeBtnText: {
     color: "#fff",
     fontWeight: "700",
   },
   statusRow: {
-    backgroundColor: "#211927",
-    borderRadius: 10,
+    backgroundColor: "#3a1d31",
+    borderRadius: 12,
     padding: 10,
-    gap: 5,
+    gap: 4,
   },
   statusText: {
-    color: "#d6ccda",
+    color: "#f8d9e8",
     fontSize: 12,
     fontWeight: "700",
   },
   planOuter: {
-    height: 320,
-    backgroundColor: "#0f0d16",
+    width: "100%",
+    aspectRatio: 1.18,
+    backgroundColor: "#0f0813",
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#f0f0f0",
+    borderColor: "#f1e8ef",
     position: "relative",
+    overflow: "hidden",
+  },
+  planOuterCompact: {
+    aspectRatio: 1.1,
   },
   room: {
     position: "absolute",
     borderWidth: 1,
+    borderColor: "#d8bfd0",
     borderStyle: "dashed",
-    borderColor: "#c9c0cc",
     alignItems: "center",
     justifyContent: "center",
   },
   bathroom: {
-    top: 36,
-    left: 20,
-    width: 120,
-    height: 90,
+    top: "10%",
+    left: "6%",
+    width: "30%",
+    height: "24%",
   },
   hallway: {
-    top: 36,
-    left: 152,
-    width: 92,
-    height: 70,
+    top: "11%",
+    left: "39%",
+    width: "24%",
+    height: "20%",
   },
   bedroom: {
-    top: 28,
-    left: 252,
-    width: 112,
-    height: 98,
+    top: "8%",
+    left: "66%",
+    width: "29%",
+    height: "26%",
   },
   living: {
-    top: 136,
-    left: 142,
-    width: 180,
-    height: 130,
+    top: "40%",
+    left: "40%",
+    width: "48%",
+    height: "40%",
   },
   roomLabel: {
-    color: "#d9d2dd",
-    fontSize: 11,
+    color: "#f0ddeb",
+    fontSize: 10,
+    letterSpacing: 0.4,
     fontWeight: "700",
   },
   nodeDot: {
     position: "absolute",
     width: 12,
     height: 12,
-    borderRadius: 999,
-    backgroundColor: "#9ec2ff",
+    borderRadius: 99,
+    backgroundColor: "#ffc8dc",
     borderWidth: 1,
-    borderColor: "#ffffff",
+    borderColor: "#fff",
+  },
+  nodeBath: {
+    top: "24%",
+    left: "19%",
+  },
+  nodeBed: {
+    top: "21%",
+    left: "79%",
+  },
+  nodeLiving: {
+    top: "57%",
+    left: "61%",
   },
   controlGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
     gap: 8,
   },
   ctrlBtn: {
@@ -486,16 +724,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   ctrlSafe: {
-    backgroundColor: "#3b486f",
+    backgroundColor: "#59658f",
   },
   ctrlDanger: {
-    backgroundColor: "#4e3144",
+    backgroundColor: "#7f365c",
   },
   ctrlPet: {
-    backgroundColor: "#2f4b58",
+    backgroundColor: "#5e5b91",
   },
   ctrlText: {
-    color: "#ffffff",
+    color: "#fff",
     fontWeight: "700",
     fontSize: 12,
     textAlign: "center",

@@ -34,15 +34,22 @@ export default function App() {
   useEffect(() => {
     const status = homeData?.system_status;
     if (status !== prevStatus) {
-      if (isAnyRoomAlert(homeData)) setDismissedAlert(false);
+      if (status && status.includes("anomaly")) setDismissedAlert(false);
       setPrevStatus(status);
     }
-  }, [homeData]);
+  }, [homeData?.system_status]);
 
-  const isAlert = !dismissedAlert && isAnyRoomAlert(homeData);
+  const isAlert =
+    !dismissedAlert &&
+    homeData?.system_status &&
+    homeData.system_status.includes("anomaly");
 
-  const alertRoom = getAlertRoom(homeData);
-  const alertCsi = getAlertCsiVariance(homeData);
+  const alertRoom =
+    homeData?.system_status === "anomaly_fall_bathroom"
+      ? "Bathroom"
+      : homeData?.system_status === "anomaly_fall_bedroom"
+      ? "Bedroom"
+      : "Bathroom";
 
   // ── Phases ──────────────────────────────────────────────────
   if (phase === "splash") return <SplashScreen />;
@@ -67,7 +74,7 @@ export default function App() {
       {isAlert && (
         <AlertScreen
           room={alertRoom}
-          csiVariance={alertCsi}
+          csiVariance={homeData?.csi_variance}
           onDismiss={() => setDismissedAlert(true)}
         />
       )}
@@ -108,33 +115,6 @@ export default function App() {
       )}
     </div>
   );
-}
-
-function isAnyRoomAlert(homeData) {
-  if (!homeData?.rooms) return false;
-  return Object.values(homeData.rooms).some(
-    (room) => room?.alert_type === "fall_detected" || room?.status === "anomaly_fall"
-  );
-}
-
-function getAlertRoom(homeData) {
-  if (!homeData?.rooms) return "Bathroom";
-  const alertEntry = Object.entries(homeData.rooms).find(
-    ([, room]) => room?.alert_type === "fall_detected" || room?.status === "anomaly_fall"
-  );
-  if (!alertEntry) return "Bathroom";
-  const [roomKey] = alertEntry;
-  return roomKey
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function getAlertCsiVariance(homeData) {
-  if (!homeData?.rooms) return undefined;
-  const alertEntry = Object.values(homeData.rooms).find(
-    (room) => room?.alert_type === "fall_detected" || room?.status === "anomaly_fall"
-  );
-  return alertEntry?.csi_variance;
 }
 
 // ── Sub-pages ────────────────────────────────────────────────
