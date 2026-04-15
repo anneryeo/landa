@@ -1,19 +1,22 @@
 {
   "name": "landa",
-  "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
   },
   "dependencies": {
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "expo": "~55.0.8",
+    "expo-status-bar": "~55.0.4",
+    "firebase": "^12.11.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-native": "0.83.2",
+    "react-native-svg": "~15.11.2",
+    "react-native-web": "^0.21.0"
   },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.1",
-    "vite": "^8.0.1"
-  }
+  "private": true
 }

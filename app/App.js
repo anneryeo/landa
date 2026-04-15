@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { database, onValue, ref, set } from "./src/firebase";
+import MapSimulatorTab from "./src/components/MapSimulatorTab";
 
 export default function App() {
   const [phase, setPhase] = useState("splash");
@@ -19,9 +20,7 @@ export default function App() {
   const [connectionStatus, setConnectionStatus] = useState("connecting");
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPhase("onboarding");
-    }, 1200);
+    const timer = setTimeout(() => setPhase("onboarding"), 1200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -39,7 +38,6 @@ export default function App() {
         setLoading(false);
       }
     );
-
     return () => unsubscribe();
   }, []);
 
@@ -79,20 +77,26 @@ export default function App() {
 
       {!isAlert && !showAdminPanel && (
         <>
-          <ScrollView style={styles.content} contentContainerStyle={styles.contentPad}>
-            {activeTab === "home" && (
-              <HomeTab
-                homeData={homeData}
-                loading={loading}
-                connectionStatus={connectionStatus}
-                onOpenAdmin={() => setShowAdminPanel(true)}
-              />
-            )}
-            {activeTab === "map" && <SimpleTab title="Map" text="Room mapping placeholder for MVP." />}
-            {activeTab === "alerts" && <SimpleTab title="Alerts" text="No recent alerts." />}
-            {activeTab === "settings" && <SimpleTab title="Settings" text="Account and notification options." />}
-          </ScrollView>
-
+          {activeTab === "map" ? (
+            <View style={styles.content}>
+              <MapSimulatorTab />
+            </View>
+          ) : (
+            <ScrollView style={styles.content} contentContainerStyle={styles.contentPad}>
+              {activeTab === "home" && (
+                <HomeTab
+                  homeData={homeData}
+                  loading={loading}
+                  connectionStatus={connectionStatus}
+                  onOpenAdmin={() => setShowAdminPanel(true)}
+                />
+              )}
+              {activeTab === "alerts" && <SimpleTab title="Alerts" text="No recent alerts." />}
+              {activeTab === "settings" && (
+                <SimpleTab title="Settings" text="Account and notification options." />
+              )}
+            </ScrollView>
+          )}
           <BottomTabs activeTab={activeTab} onSelect={setActiveTab} />
         </>
       )}
@@ -124,11 +128,9 @@ function HomeTab({ homeData, loading, connectionStatus, onOpenAdmin }) {
       <Text style={styles.cardRow}>
         Living room variance: {formatVariance(homeData?.rooms?.living_room?.csi_variance)}
       </Text>
-
       <Pressable style={styles.primaryBtn} onPress={onOpenAdmin}>
         <Text style={styles.primaryBtnText}>Open Simulator Controls</Text>
       </Pressable>
-
       {loading && <Text style={styles.muted}>Loading realtime data...</Text>}
     </View>
   );
@@ -185,7 +187,7 @@ function AdminPanel({ homeData, loading, onClose }) {
   return (
     <SafeAreaView style={styles.adminWrap}>
       <View style={styles.adminTop}>
-        <View>
+        <View style={styles.adminTitleWrap}>
           <Text style={styles.adminTitle}>Wi-Fi Sensing: Home Presence Detection</Text>
           <Text style={styles.adminSub}>Baseline CSI established. Environment stable.</Text>
         </View>
@@ -205,7 +207,7 @@ function AdminPanel({ homeData, loading, onClose }) {
       <FloorPlan />
 
       <View style={styles.controlGrid}>
-        <Pressable style={[styles.ctrlBtn, styles.ctrlSafe]} onPress={() => sendCommand("reset") }>
+        <Pressable style={[styles.ctrlBtn, styles.ctrlSafe]} onPress={() => sendCommand("reset")}>
           <Text style={styles.ctrlText}>Reset All Secure</Text>
         </Pressable>
         <Pressable
@@ -387,6 +389,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 12,
+  },
+  adminTitleWrap: {
+    flex: 1,
   },
   adminTitle: {
     color: "#ffffff",
