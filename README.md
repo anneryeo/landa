@@ -228,9 +228,9 @@ Together, they form an "Active + Passive" remote care ecosystem: Landa detects t
 | Name                           | Role                               |
 | ------------------------------ | ---------------------------------- |
 | **Anne Reyes**           | Concept, architecture, development |
-| **Shania Dela Vega**     | Teammate                           |
-| **Louella Arce Ng**      | Teammate                           |
-| **Kim Caryl Esperanza**  | Teammate                           |
+| **Shania Dela Vega**     | Backend & Database Developer                           |
+| **Louella Arce Ng**      | Business Analyst                           |
+| **Kim Caryl Esperanza**  | UI/UX Designer, Researcher                           |
 | **Ms. Renilda S. Layno** | Adviser                            |
 
 Built for the **Cambridge University Press & Assessment Philippines Women in Tech Hackathon 2026** — where we placed **3rd**.
